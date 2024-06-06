@@ -4,9 +4,8 @@ from pathlib import Path
 import collections
 
 
-SESSION_PATH = os.path.join(os.getcwd(),r'data pipeline\data processing workflow\data processing session')
-LOADED_RESOURCES_PATH = os.path.join(os.getcwd(),r'data pipeline\data processing workflow\data processing session\resources_info.txt')
-CURRENT_FOLDER = 'data pipeline\data processing workflow'
+SESSION_PATH =os.path.join(os.getcwd(), 'data processing session')
+LOADED_RESOURCES_PATH = os.path.join(os.getcwd(),'data processing session','resources_info.txt')
 
 #SESSION_PATH = r'C:\Users\eduardmarin\OneDrive - Nagarro\Desktop\Proiect Licenta\data pipeline\data processing workflow\data processing session'
 #LOADED_RESOURCES_PATH = r'C:\Users\eduardmarin\OneDrive - Nagarro\Desktop\Proiect Licenta\data pipeline\data processing workflow\data processing session\resources_info.txt'
@@ -469,8 +468,8 @@ def update_feedback(ratings,res):
 
 def compute_ratings(print_ratings = True,remove_outlier = True):
     
-    user_fp =SESSION_PATH + r'\users_info'
-    res_fp = SESSION_PATH + r'\resources_info'
+    user_fp =os.path.join(SESSION_PATH,'users_info')
+    res_fp = os.path.join(SESSION_PATH,'resources_info')
     user_file = open(user_fp
     ,encoding='utf-8')
     res_file = open(res_fp)

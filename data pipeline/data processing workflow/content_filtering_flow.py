@@ -2,16 +2,6 @@ import json
 from sentence_transformers import SentenceTransformer
 import numpy as np
 import os
-import data_processing
-from pyspark.sql import SparkSession
-from pyspark.sql.functions import col,lit
-from pyspark.ml.evaluation import RegressionEvaluator
-from pyspark.ml.recommendation import ALS
-from pyspark.sql import Row
-import findspark
-import sys
-import pandas as pd
-from sklearn.metrics.pairwise import cosine_similarity
 
 
 CURRENT_DIRECTORY =os.path.join(os.getcwd(),r'data pipeline\data processing workflow')
@@ -140,7 +130,3 @@ def content_filtering(data_file_location=DATA_LOCATION):
     json.dump(results,results_file)
 
 content_filtering()
-
-
-
-data pipeline/data processing workflow/content_filtering_flow.py
