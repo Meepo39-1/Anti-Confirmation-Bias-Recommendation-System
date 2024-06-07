@@ -25,8 +25,12 @@ TEST RECOMMENDATIONS:
         python "data pipeline/data processing workflow/content_filtering_flow.py"
 
     For collaborative filtering, type:
-        Unzip raw_delta_log_submissions.zip
-        jupyter notebook "collaborative_filtering_flow.ipynb"
+        You can either:
+            1. download git lfs: https://github.com/git-lfs/git-lfs?utm_source=gitlfs_site&utm_medium=source_link&utm_campaign=gitlfs
+               and type: git lfs install in git bash
+            2. Unzip any of raw_delta_log_submissions.zip or raw_delta_log_submissions.rar 
+        
+        open jupyter notebook "collaborative_filtering_flow.ipynb"
         and select the previously created (env) environment as the kernel
 
         Note: 
