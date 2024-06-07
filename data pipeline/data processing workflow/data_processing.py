@@ -524,7 +524,7 @@ def compute_ratings(print_ratings = True,remove_outlier = True):
     def print_ratings(ratings, ratings_file = None):
 
         num_interactions = 0
-        extracted_ratings_fp = SESSION_PATH +r'\extracted_ratings'
+        extracted_ratings_fp = os.path.join(SESSION_PATH,'extracted_ratings')
         ratings_file = open(extracted_ratings_fp,'w',encoding='utf-8')
         
         unique_resources = set()
