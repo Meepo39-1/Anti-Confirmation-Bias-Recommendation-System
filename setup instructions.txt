@@ -1,3 +1,35 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:549189b092474328122db29d18aea675a2c51c0f170f033af90af51d6ada46e7
-size 590
+Python version: 3.10.0
+download link: https://www.python.org/downloads/release/python-3100/
+
+
+CREATE VIRTUAL ENVIRONMENT:
+    open a terminal in project's folder location
+    pip install virtualenv
+    python -m venv env
+
+ACTIVATE VIRTUAL ENVIRONMENT
+    Windows:
+        Set-ExecutionPolicy Unrestricted -Scope Process
+        env/Scripts/activate
+
+    On Unix or MacOS:
+        source env/bin/activate
+
+
+INSTALL DEPENDENCIES:
+    pip install -r requirements.txt
+
+
+TEST RECOMMENDATIONS:
+    For content filtering type in terminal:
+        python "data pipeline/data processing workflow/content_filtering_flow.py"
+
+    For collaborative filtering, type:
+        Unzip raw_delta_log_submissions.zip
+        jupyter notebook "collaborative_filtering_flow.ipynb"
+        and select the previously created (env) environment as the kernel
+
+        Note: 
+            For opening the notebook you can use:
+                pip install notebook
+                jupyter notebook collaborative_filtering_flow.ipynb

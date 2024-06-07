@@ -1,3 +1,6 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:51f00ce8cb852b9bac137dfe41a7781f09f02c3aa11e259f6d0fff236141162b
-size 4936
+findspark==2.0.1
+numpy==1.26.4
+pandas==2.2.2
+pyspark==3.5.1
+scikit_learn==1.5.0
+sentence_transformers==3.0.0
