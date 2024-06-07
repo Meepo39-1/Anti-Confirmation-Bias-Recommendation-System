@@ -3,29 +3,31 @@ import os
 from pathlib import Path
 import collections
 
-
+#SESSION_PATH = Anti Confirmation Bias Recommendation System\\data pipeline\\data processing workflow\\data processing session
 SESSION_PATH =os.path.join(os.getcwd(), 'data processing session')
-LOADED_RESOURCES_PATH = os.path.join(os.getcwd(),'data processing session','resources_info.txt')
+LOADED_RESOURCES_PATH = os.path.join(SESSION_PATH,'resources_info.txt')
 
-#SESSION_PATH = r'C:\Users\eduardmarin\OneDrive - Nagarro\Desktop\Proiect Licenta\data pipeline\data processing workflow\data processing session'
-#LOADED_RESOURCES_PATH = r'C:\Users\eduardmarin\OneDrive - Nagarro\Desktop\Proiect Licenta\data pipeline\data processing workflow\data processing session\resources_info.txt'
+#dicts for resources and title, shall be used for matrix factorization#
 
-#ids for resources and title, shall be used for matrix factorization
-
+#key: title, value: id
 res_id = collections.defaultdict()
+#key: id, value: resource object:  
 id_res = collections.defaultdict()
+#key: username, value: id
 user_id = collections.defaultdict()
+#key:id, value: user object
 id_user = collections.defaultdict()
 
 description = {}
 
-#titles of resources which shall be used for extracting descriptions (for content filtering)
+#titles of resources which shall be used for extracting descriptions (for content filtering)#
 search_titles = set()
 
-#titles which had no description found
+#titles which had no description found#
 not_found_titles = set()
 
-def load_resources_from_raw_delta_logs(out_file = None, min_num_interactions=0):
+# resource loading functions #
+def load_resources_from_raw_delta_logs(out_file_path = LOADED_RESOURCES_PATH, min_num_interactions=0):
 
     ''' Loads resources from raw_delta_log_submissions.txt 
         
@@ -34,34 +36,41 @@ def load_resources_from_raw_delta_logs(out_file = None, min_num_interactions=0):
         Saves resources with a minimum number of ratings into res_id and id_res 
         
         min_num_interactions -> treshold for minimum number of ratings
-        '''
 
+        out_file_path -> file location of generated resources file
+    '''
+    global res_id, id_res,user_id,id_user
+    # restore dictionary values 
+    res_id = collections.defaultdict()
+    id_res = collections.defaultdict()
+    user_id = collections.defaultdict()
+    id_user = collections.defaultdict()
+     
+    delta_logs_file_path = os.path.join(os.getcwd(),'raw_delta_log_submissions.txt')
 
-    current_working_directory = os.getcwd() 
-    parrent_directory = os.path.split(current_working_directory)[0]
-    #absolute_path ='data\submissions\processed\pessimistic'
-    delta_logs_file_path = os.path.join(current_working_directory,'raw_delta_log_submissions.txt')
-    if out_file == None:
-        res_file_path = LOADED_RESOURCES_PATH
-    else:
-        res_file_path = out_file
+  
+    res_file_path = out_file_path
 
     def get_OP_from_delta_log(body):
+
+        '''
+            Find original poster (OP) from post description body
+
+            Returns: username (string)
+        '''
         
         start_index = body.find('/u/') +3
         end_index = body[start_index:].find('\n\n')
 
         return body[start_index:start_index+end_index]
-    def extract_text(line):
-        post = json.loads(line)
-        
-        try:
-            text = post['selftext']
-        except:
-            text = post['body']
-
-        return text
+    
     def get_users_who_got_delta_from_OP(text):
+
+        '''
+            Extract usernames of users who negatively rated the post from text
+
+            Returns: username list(list of strings)
+        '''
         
         KEY_PHRASE_START = '1 delta from OP to /u/'
         KEY_PHRASE_START_OFFSET = len(KEY_PHRASE_START)
@@ -70,6 +79,7 @@ def load_resources_from_raw_delta_logs(out_file = None, min_num_interactions=0):
         list_users = []
 
         while text.find(KEY_PHRASE_START)!=-1:
+
             #print(text.find(KEY_PHRASE_START))
             start_user_name = text.find(KEY_PHRASE_START)+KEY_PHRASE_START_OFFSET
             end_user_name = text.find(KEY_PHRASE_END)
@@ -77,10 +87,17 @@ def load_resources_from_raw_delta_logs(out_file = None, min_num_interactions=0):
             text = text[end_user_name+1:]
             #print(text)
 
-        #while(text.find(KEY_PHRASE))
-
         return list_users
+    
     def get_users_who_got_delta_from_OTHERS(text):
+
+        '''
+            Extract usernames of users who positively rated the post
+            but were not the original poster (OP)
+
+            Returns: username list(list of strings)
+        '''
+
         list_users = []
 
         CUT_PHRASE = 'Deltas from Other Users'
@@ -107,8 +124,14 @@ def load_resources_from_raw_delta_logs(out_file = None, min_num_interactions=0):
             text = text[text.find(second_user)+1:]
 
         return list_users
+    
     def extract_feedback_from_post(body):
+        '''
+            Extract all users who rated the post
 
+            Returns: (positive feedback users, negative feedback users) (tuple of lists of strings)
+        
+        '''
         positive_feedback_op = []
         if len(get_users_who_got_delta_from_OP(body))>0:
             positive_feedback_op = [get_OP_from_delta_log(body)]
@@ -132,6 +155,30 @@ def load_resources_from_raw_delta_logs(out_file = None, min_num_interactions=0):
         
         return (pos_feedback_users,neg_feedback_users)
     def extract_delta_log_titles_urls_interactions(line,out_file,titles,urls,min_num_interactions=1,):
+        '''
+
+        Extracts resource data from text entry in the format:
+            (
+            title of reddit post,
+
+             url of reddit post,
+
+             users who rated the post postively,
+
+             users who rated the post negatively
+             )
+
+        line -> text entry from raw_delta_log_submissions.txt 
+
+        out_file -> file where resource data will be written
+
+        titles -> set of previosly met titles
+
+        urls -> set of previously met urls
+
+        min_num_interactions -> treshold for resource data to appear in out_file
+        '''
+
         global search_titles
         title =  clean_title(json.loads(line)['title'])
         try:
@@ -168,9 +215,22 @@ def load_resources_from_raw_delta_logs(out_file = None, min_num_interactions=0):
                 out_file.write(json.dumps({"id": id,"title":title,'pos_feedback':pos_feedback_users,'neg_feedback':neg_feedback_users,'url':url}))
                 out_file.write('\n')
    
-                search_titles.add(title)         
+                search_titles.add(title)   
+
     def extract_resources_from_delta_logs_file(res_file_path,delta_logs_file_path,min_num_interactions=2,tolerance_limit=100):
-        #print(delta_logs_file_path)
+        '''
+        Refer to load_resources_from_raw_delta_logs
+
+        res_file_path -> file location of generated resources
+
+        delta_logs_file_path -> file location
+
+        min_num_interactions -> ratings treshold for resource to be added to the file
+
+        tolerance_limit -> if found more errors than this treshold, stop the execution
+    
+        '''
+
         global res_id
         global id_res
         id_res = collections.defaultdict()
@@ -182,6 +242,7 @@ def load_resources_from_raw_delta_logs(out_file = None, min_num_interactions=0):
         num_exceptions  = 0
         TOLERANCE_LIMIT = tolerance_limit
         MIN_NUM_INTERACTIONS = min_num_interactions
+
         for line in delta_logs_file:
             try:
                 extract_delta_log_titles_urls_interactions(line,res_file,titles,urls,MIN_NUM_INTERACTIONS)
@@ -192,18 +253,27 @@ def load_resources_from_raw_delta_logs(out_file = None, min_num_interactions=0):
                     break
         res_file.close()
         delta_logs_file.close()
-    #print(current_working_directory)          
     extract_resources_from_delta_logs_file(res_file_path,delta_logs_file_path,min_num_interactions)
+
 get_resource_id_errs = 0
-def get_resource_id(title):
+def get_resource_id(title, fail_safely=False):
     global get_resource_id_errs 
-    try:
-        return res_id[title]
-    except:
-        get_resource_id_errs+=1
-        return len(res_id) + 1
+    
+    id = None
+    if fail_safely:
+        try:
+            id = res_id[title]
+        except:
+            get_resource_id_errs+=1
+            id = len(res_id) + 1
+    else:
+        id = res_id[title]
+    
+    return id   
+
 def get_resource_info(id):
     return id_res[id]
+
 def clean_title(title):
     IRELEVANT_PREFIX_LENGTH = len('Deltas awarded in \"cmv:')
     IRELEVENT_SUFIX_LENGTH = len('... ')
@@ -250,101 +320,12 @@ def clean_title(title):
     #print(new_title)
     return new_title
 
-        
-        #print(line)
-        #print(title)
-def extract_descriptions():
-    '''
-    TO DO: description extraction from data lake
-    '''
 
-    fp = r'C:\Users\eduardmarin\OneDrive - Nagarro\Desktop\Proiect Licenta\data pipeline\data processing workflow\pessimistic_data\found_titles.txt'
-    def aprox_equal(baseline,comparing):
-        def eliminate_amp(text):
-            if '&amp;amp;' in text:
-                return text.replace('&amp;amp;','and')
-            elif '&amp;' in text:
-                return text.replace('&amp;','and')
-            
-            return text
-        #lowercase and eliminating whitespaces
-        baseline = baseline.lower()
-        baseline = baseline.strip()
-        comparing = comparing.lower()
-        comparing = comparing.strip()
-
-
-
-        #eliminate (&) inconsistencies
-        baseline = eliminate_amp(baseline)
-        comparing = eliminate_amp(comparing)
-
-
-        for index in range(0,5):
-            if baseline[index:] in comparing or comparing in baseline[index:]:
-                return True
-                
-        return False
-        
-    def found_aprox_equal_titles(title,search_titles):
-        for second_title in search_titles:
-            if aprox_equal(title,second_title):
-                return (True,second_title)
-        return (False,"")
-    
-    global not_found_titles 
-    found_titles_file = open(fp, 'r')
-    
-    for line in found_titles_file:
-        found = False
-        obj = json.loads(line)
-        #print(f'title format from found titles: {obj}' )
-        for index, title in enumerate(search_titles):
-            #print(title,obj['title'])
-            if (aprox_equal(title,obj['title'])):
-                found = True
-                print(f'original title :{title}')
-                print(f'found title : {obj["title"]} ')
-                print(f'description {obj["body"]} ')
-                break
-        if not found:
-            not_found_titles.add(obj['title'])
-        print('------------------')
-
-
-def init_descriptions():
-
-    '''Works independendtly from load_resources_from_raw_delta_logs function'''
-    global description
-    fp = r'C:\Users\A&A\Downloads\Date Personale Laptop Nagarro\Proiect Licenta\data pipeline\data processing workflow\pessimistic_data\found_titles.txt'
-
-    file = open(fp)
-
-    for line in file:
-        obj = json.loads(line)
-        #print(obj.keys())
-        title  = obj['title'] 
-        found_title = obj['found_title']
-        if len(title)<50 or len(found_title)<50:
-            continue
-            #print(f'title: {title}, found title : {found_title}')
-        else:
-            description[title] = obj['body']
-
-       
-
-
-
-# def add_resource(resource)
-# def get_resource(resource_id)
-# def edit_resource(resource_id)
-def delete_resource(resource_id):
-    return None
-
-
+# users loading functions#
 def load_users(out_file=None, min_num_interactions=0):
     '''
     Extracts users with min_num_interactions ratings or more 
+
     Users are saved in user_id, and id_res dicts
 
     Notes:
@@ -388,11 +369,13 @@ def load_users(out_file=None, min_num_interactions=0):
             num_neg_interactions = len(users[user]['neg_feedback'])
             num_total_interactions = num_poz_interactions + num_neg_interactions
             if num_total_interactions>=min_num_interactions:
-                users_file.write(json.dumps({'user':user,'num_poz_interactions':num_poz_interactions,'num_neg_interactions':num_neg_interactions,'total':num_total_interactions,'pos_feedback':users[user]['pos_feedback'],'neg_feedback':users[user]['neg_feedback']},ensure_ascii=False))
+                user_obj ={'user':user,'num_poz_interactions':num_poz_interactions,'num_neg_interactions':num_neg_interactions,'total':num_total_interactions,'pos_feedback':users[user]['pos_feedback'],'neg_feedback':users[user]['neg_feedback'] }
+
+                users_file.write(json.dumps(user_obj,ensure_ascii=False))
                 users_file.write('\n')
                 id = len(user_id) + 1
                 user_id[user] = len(user_id) + 1
-                id_user[id] = user
+                id_user[id] = user_obj
                 high_int_users.add(user)
         users_file.close()
         return high_int_users
@@ -404,12 +387,20 @@ def get_username(id):
     return id_user[id]
 
 
-
-import json 
-
-
+#computing ratings functions#
 def feedback_formula(num_ratings,positive=True):
+    ''' 
+    Given that the dataset ratings are negatively skewed, 
+    the feedback formula favors positive feedback
 
+    positive feedback = 1/2 + 1/4 +... +1/num_ratings
+    neg_feedbcak = -( 0.5 + 0.5/num_ratings)
+
+    Why this choice?
+    user colleced feedback is about changing their views about a topic
+    current computed feedback is about being exposed to a novel perspective,
+    since trying to "adjust" for the negative biased in dataset
+    '''
     if positive == True:
         exp = 1
         s = 0
@@ -424,12 +415,19 @@ def feedback_formula(num_ratings,positive=True):
         return -1 * s
 
 def update_feedback(ratings,res):
+
+    ''' 
+    Transform ratings from binary ("changed my mind","not changed my mind")
+    to a continous value between -1("no novel perspective) and 1(mind blowingly perspective)
+
+    ratings -> dict of previously user binary ratings
+    res -> dictionary of resources data (title, url, pos_feedback_users, neg_feedback_users)
+    '''
      
     for user_id in ratings.keys():
         #Modifying user ratings from  dict->list to dict->dict
 
         feedback = {}
-        #user_ratings = copy.copy(ratings[user_id])
         for res_id, value in ratings[user_id]:
             feedback[res_id] = value
         
@@ -439,11 +437,10 @@ def update_feedback(ratings,res):
     for res_id in res.keys():
         pos_feedback = res[res_id]['pos_feedback']
         neg_feedback = res[res_id]['neg_feedback']
-        #print(len(pos_feedback))
+
         new_pos_feedback = feedback_formula(len(pos_feedback))
         new_neg_feedback = feedback_formula(len(pos_feedback),positive=False)
         
-        #print(new_pos_feedback)
         ''' erorrs are caused by the fact that not all users who interacted
         with the resource are in the final list of users
           (users who had at least min_interactions with other resources)'''
@@ -467,20 +464,36 @@ def update_feedback(ratings,res):
                 #print(f'error casued by {e}')
 
 def compute_ratings(print_ratings = True,remove_outlier = True):
-    
+
+    ''' 
+        Computes ratings for every user from "data processing session/users_info"
+        
+        remove_outlier ->boolean for removing an user that rated all resources, signaling a possible bug
+        in load_resources_from_raw_delta_logs
+
+        Note:
+            You need to run load_resources_from_raw_delta_logs and load_users first
+
+            Check update_feedback for ratings formula
+
+        Retuns: (users dict,resources dict,ratings dict,num_interactions)
+
+    '''
+
     user_fp =os.path.join(SESSION_PATH,'users_info')
-    res_fp = os.path.join(SESSION_PATH,'resources_info')
+    res_fp = os.path.join(SESSION_PATH,'resources_info.txt')
     user_file = open(user_fp
     ,encoding='utf-8')
     res_file = open(res_fp)
     ratings = {}
     user = {}
     res ={}
+
     for line in user_file:
+
         #extracting user data
         obj = json.loads(line)
         user_id = get_user_id(obj['user'])
-        #print(user_id)
         ratings[user_id] = []
         user[user_id] = obj
 
@@ -494,120 +507,47 @@ def compute_ratings(print_ratings = True,remove_outlier = True):
         #appending data to
         ratings[user_id].extend(pos_feedback)
         ratings[user_id].extend(neg_feedback)
-        #print(ratings[user_id])
+
     if remove_outlier:
         del ratings[get_user_id("")]
     for line in res_file:
         obj = json.loads(line)
         res_id = get_resource_id(obj['title'])
         res[res_id] = obj
-    #print(len(ratings))
+
     print(f'{len(user)} users')
     
-    # print(data_processing.res_id[list(data_processing.res_id.keys())[-1]])
-    # print(data_processing.user_id[list(data_processing.user_id.keys())[-1]])
+   
+   
     update_feedback(ratings,res)
+
     def print_ratings(ratings, ratings_file = None):
+
         num_interactions = 0
         extracted_ratings_fp = SESSION_PATH +r'\extracted_ratings'
         ratings_file = open(extracted_ratings_fp,'w',encoding='utf-8')
-        entries = set()
-        num_err = 0
+        
+        unique_resources = set()
+
         for user_id in ratings.keys():
-            #print(ratings[user_id])
-            #print(list(ratings[user_id]))
             for res_id,value in ratings[user_id].items():
+
                 ratings_file.write(f'{user_id} {res_id} {value}\n')
 
                 num_interactions +=1
-                entries.add(res_id)
+                unique_resources.add(res_id)
         ratings_file.close()
-        #print(f'resources which raised an error:{num_err}')
-        print(f'{len(entries)} final resources')
-        print(f'{len(res)} initial resources')
+
+        print(f'{len(unique_resources)} rated resources from initially {len(res)} loaded resources')
         print(f'{num_interactions} interactions')
-        return (num_interactions,entries)
+        return (num_interactions,unique_resources)
 
     num_interactions = 0
     if print_ratings:
         num_interactions,resources = print_ratings(ratings)
+        try:
+            populated_percent = (num_interactions *100) / (len(user)*len(resources))
+        except:
+            populated_percent = 0
+        print(f'feedback matrix is {populated_percent}% populated')
     return (user,resources,ratings,num_interactions)
-
-
-def create_content_filtering_database(file_location =os.path.join(SESSION_PATH,'session_content_filtering_data.json') , huggingface_model_name='BAAI/bge-small-en-v1.5'):
-    
-    # extract posts and descriptions separately and glue them toghether
-    load_resources_from_raw_delta_logs(min_num_interactions=0)
-    init_descriptions()
-    def aprox_equal(baseline,comparing):
-        def eliminate_amp(text):
-            if '&amp;amp;' in text:
-                return text.replace('&amp;amp;','and')
-            elif '&amp;' in text:
-                return text.replace('&amp;','and')
-            
-            return text
-        #lowercase and eliminating whitespaces
-        baseline = baseline.lower()
-        baseline = baseline.strip()
-        comparing = comparing.lower()
-        comparing = comparing.strip()
-
-
-
-        #eliminate (&) inconsistencies
-        baseline = eliminate_amp(baseline)
-        comparing = eliminate_amp(comparing)
-
-
-        for index in range(0,5):
-            if baseline[index:] in comparing or comparing in baseline[index:]:
-                return True
-                
-        return False
-    titles = set(res_id.keys())
-    title_descriptions = set(description.keys())
-    file = open(file_location,'w',encoding='utf-8')
-    content_filtering_data = {}
-    for t1 in titles:
-        for t2 in title_descriptions:
-            if aprox_equal(t1,t2) and len(t1)>50 and len(t2)>50 or t1 == t2:
-                content_filtering_data[res_id[t1]] = id_res[res_id[t1]]
-                content_filtering_data[res_id[t1]]['description'] = description[t2]
-    
-    #extract text for embeddings
-    text_titles = []
-    texts = []
-    text_keys = []
-
-    for key in content_filtering_data:
-            text_keys.append(key)
-            if content_filtering_data[key]['description']!= "[deleted]":
-                text = "title:" +content_filtering_data[key]['title'] + "\n description:"+ content_filtering_data[key]['description']
-            else:
-                text = "title:" + content_filtering_data[key]['title'] +"\n description:None"
-            text_titles.append(content_filtering_data[key]['title'])
-            texts.append(text)
-    #create embeddings
-    def create_embeddings(text_titles, texts, text_keys,huggingface_model_name):
-        #dummy_embeddings = [[] for x in range(len(texts))]
-        from sentence_transformers import SentenceTransformer
-
-        #model = SentenceTransformer('BAAI/bge-small-en-v1.5')
-        model = SentenceTransformer(huggingface_model_name)
-        embeddings = model.encode(texts)
-        similarity = model.similarity(embeddings,embeddings)
-
-        return (embeddings,similarity)
-    embeddings,similarity = create_embeddings(text_titles,texts,text_keys,huggingface_model_name)
-
-    #pair embeddings to text
-    for title_id in range(len(text_titles)):
-        #print(text_titles[title_id])
-        #print(texts[title_id])
-        #print(json_object[text_keys[title_id]])
-        #print(json_object[])
-        content_filtering_data[text_keys[title_id]]['embedding'] = embeddings[title_id].tolist()
-    #save them to an external file to retrieve later  
-    file.write(json.dumps(content_filtering_data))
-    return embeddings,similarity,texts,content_filtering_data

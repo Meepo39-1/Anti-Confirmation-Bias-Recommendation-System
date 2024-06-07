@@ -66,8 +66,8 @@ def content_filtering(data_file_location=DATA_LOCATION):
         elif avg_sim>0.50:
             bins["50-55"].append((baseline_res,similar_res_indexes,similar_scores))
 
-    #print(bins)
-
+    #this 2 functions ensures that there is a small chance that we get 
+    #a resource that is too similar or not enough similar
     def sample_sim_res_index(mean=2.5,sigma = 1):
         sampled_idx = np.random.normal(size=sigma, loc=mean, scale=1)
 
@@ -94,6 +94,9 @@ def content_filtering(data_file_location=DATA_LOCATION):
     results_file = open(results_file_location,'w')
     results = {}
 
+
+    #recommending in pairs of 2 and collecting feedback about recommendation
+    #at every level of similarity score (from mean 50 to mean 90)
     for bin_rec_sample in sample_res(bins):
         #presenting baseline
 
