@@ -4,7 +4,7 @@ import numpy as np
 import os
 
 
-CURRENT_DIRECTORY =os.path.join(os.getcwd(),r'data pipeline\data processing workflow')
+CURRENT_DIRECTORY =os.path.join(os.getcwd(),'data pipeline','data processing workflow' )
 CONTENT_FILTERING_FOLDER_LOCATION = os.path.join(CURRENT_DIRECTORY,r'content_filtering_results')
 
 
