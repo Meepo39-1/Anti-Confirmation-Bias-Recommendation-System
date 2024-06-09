@@ -10,6 +10,30 @@ CONTENT_FILTERING_FOLDER_LOCATION = os.path.join(CURRENT_DIRECTORY,r'content_fil
 
 DATA_LOCATION = os.path.join(CURRENT_DIRECTORY,r'content_filtering_data.json')
 
+RATING_DESCRIPTION =""
+TASK_DESCRIPTION =""
+
+#helper functions for user input#
+def is_valid(input,inf,sup,categorical=False):
+    try:
+        if categorical:
+            rating  = int(input)
+        else:
+            rating  = float(input)
+        if rating < inf or rating > sup:
+            return False
+        else:
+            return True
+    except:
+        return False
+
+def collect_feedback(input_text,error_text,inf_bound,sup_bound,categorical=False):
+    feedback = input(input_text)
+    while is_valid(feedback,inf_bound,sup_bound,categorical) == False:
+        print(error_text)
+        feedback = input(input_text)
+    return feedback
+             
 def content_filtering(data_file_location=DATA_LOCATION):
     
     #collect name and present task
@@ -108,7 +132,12 @@ def content_filtering(data_file_location=DATA_LOCATION):
         print(f'url: {baseline_res["url"]}')
         print(f'description: {baseline_res["description"]}')
 
-        baseline_score = float(input('How much did this post make you see things trough a new perspective?:'))
+
+        feedback = collect_feedback('How much did this post make you see things trough a new perspective?:',
+                         "Input should be a continuous value between -1 and 1",
+                         inf_bound=-1,
+                         sup_bound=1)
+        baseline_score = float(feedback)
 
         #presenting recommendation
         print(f'recommendation:')
@@ -120,8 +149,18 @@ def content_filtering(data_file_location=DATA_LOCATION):
         rec_sim_score = bin_rec_sample["similar_res_score"]
         print(f'similarity: {rec_sim_score}')
         
-        rec_score = float(input('How much did this recommended post make you see things trough a new perspective?:'))
-        relevance_score = float(input('On a scale of 1-5, how much would you agree with the statement  \"The recommend post was relevant to the first post, but presented the subject through a novel perspective\":'))
+        feedback = collect_feedback('How much did this post make you see things trough a new perspective?:',
+                         "Input should be a continuous value between -1 and 1",
+                         inf_bound=-1,
+                         sup_bound=1)
+        rec_score = float(feedback)
+
+        feedback = collect_feedback('On a scale of 1-5, how much would you agree with the statement  \"The recommend post was relevant to the first post, but presented the subject through a novel perspective\":',
+                        "Input should be an integer between 1 and 5",
+                        inf_bound=1,
+                        sup_bound=5,
+                        categorical=True)
+        relevance_score = int(feedback)
 
         bin_result = {'similarity_score':rec_sim_score, 'baseline_score':baseline_score,'recommendation_score':rec_score,'relevance_score':relevance_score,'baseline_res':baseline_res,'recommendation':rec_res}
 
