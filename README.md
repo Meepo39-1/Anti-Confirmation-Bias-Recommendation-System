@@ -35,5 +35,6 @@ Notes:
  * In case it wasn't clear from the wording. The difference between a 0.5 and 1 rating isn't linear. Meaning that your standards for a 1 rating should be really high. Think that you need to be exposed to 3+ new ways of seeing things to approach such a rating. Same for the negative ratings.
 
 ## How can I test it?
-If you're feeling brave you can clone this repo locally and follow the steps from "setup instructions.txt"
+If you're feeling brave you can clone this repo locally and follow the steps from "setup instructions.txt".
+
 Otherwise, you can run these google colab notebooks: [content filtering](https://colab.research.google.com/drive/1Y0vRqUAqbu6FSj41O0nf3SeNYkw4lY7o?usp=sharing), [collaborative filtering](https://colab.research.google.com/drive/1dvJ0yhuKA26XCYU9sncrmqCpA-2dagfi?usp=sharing)
