@@ -36,4 +36,4 @@ Notes:
 
 ## How can I test it?
 If you're feeling brave you can clone this repo locally and follow the steps from "setup instructions.txt"
-Otherwise, you can run these google colab links: [TO BE ADDED](), [TO BE ADDED]()
+Otherwise, you can run these google colab links: [content filtering](https://colab.research.google.com/drive/1Y0vRqUAqbu6FSj41O0nf3SeNYkw4lY7o?usp=sharing), [TO BE ADDED]()
