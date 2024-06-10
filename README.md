@@ -13,7 +13,7 @@ A great example of this technology is YouTube's recommendation algorithm, which 
 
 Valid question. This recommender system will suggest posts from [r/changemyview](https://www.reddit.com/r/changemyview/) - a community where users create posts about different topics that they would like to change their opinion about, or at least see things through a new perspective.
 
-The process is simple: you get recommended a Reddit post; you rate how much you were exposed to new perspectives.
+The process is simple: you get recommended a Reddit post; you rate how much you were exposed to new perspectives based on your own views.
 
 ## How should I rate the recommendations?
 
