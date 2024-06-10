@@ -13,6 +13,8 @@ A great example of this technology is YouTube's recommendation algorithm, which 
 
 Valid question. This recommender system will suggest posts from [r/changemyview](https://www.reddit.com/r/changemyview/) - a community where users create posts about different topics that they would like to change their opinion about, or at least see things through a new perspective.
 
+The process is simple: you get recommended a Reddit post; you rate how much you were exposed to new perspectives.
+
 ## How should I rate the recommendations?
 
 Ratings represent a continuous value ranging from -1 and 1. 
@@ -32,7 +34,7 @@ Your rating should reflect how much of a new perspective you were presented with
 Notes:
  * You can write any values( like 0.2,-0.7...etc) as long as it is between -1, and 1. Above there are just some intuitive explanations of what those numerical value are supposed to mean
  * You **don't** have to agree with the ideas presented in the post or comment section. Same for liking them. Even if they are blatantly false. All that matters is that your brain was challenged to see things in a new light.
- * In case it wasn't clear from the wording. The difference between a 0.5 and 1 rating isn't linear. Meaning that your standards for a 1 rating should be really high. Think that you need to be exposed to 3+ new ways of seeing things to approach such a rating. Same for the negative ratings.
+ * In case it wasn't clear from the wording. The difference between a 0.5 and 1 rating isn't linear. Meaning that your standards for a 1 rating should be really high. Think that the recommendations should expose you to 3+ new ways of seeing things to approach such a rating. Same for the negative ratings.
 
 ## How can I test it?
 If you're feeling brave you can clone this repo locally and follow the steps from "setup instructions.txt".
