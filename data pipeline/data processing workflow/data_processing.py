@@ -367,6 +367,7 @@ def load_users(out_file=None, min_num_interactions=0):
         for user in users.keys():
             num_poz_interactions = len(users[user]['pos_feedback'])
             num_neg_interactions = len(users[user]['neg_feedback'])
+            #print(f'pos: {num_poz_interactions}, neg: {num_neg_interactions}')
             num_total_interactions = num_poz_interactions + num_neg_interactions
             if num_total_interactions>=min_num_interactions:
                 user_obj ={'user':user,'num_poz_interactions':num_poz_interactions,'num_neg_interactions':num_neg_interactions,'total':num_total_interactions,'pos_feedback':users[user]['pos_feedback'],'neg_feedback':users[user]['neg_feedback'] }
@@ -393,26 +394,26 @@ def feedback_formula(num_ratings,positive=True):
     Given that the dataset ratings are negatively skewed, 
     the feedback formula favors positive feedback
 
-    positive feedback = 1/2 + 1/4 +... +1/num_ratings
-    neg_feedbcak = -( 0.5 + 0.5/num_ratings)
+    positive feedback = 1/2 + 1/4 +... +1/2^num_ratings
+    neg_feedbcak = -( 1/2 + 1/8 + 1/16 +...+1/2^num_ratings+1)
 
     Why this choice?
     user colleced feedback is about changing their views about a topic
     current computed feedback is about being exposed to a novel perspective,
     since trying to "adjust" for the negative biased in dataset
     '''
-    if positive == True:
-        exp = 1
-        s = 0
-        for i in range(num_ratings):
-            s = s+ 1/2**exp
+    s = 0
+    exp = 1
+    for i in range(1,num_ratings+1):
+        if positive == False and i == 2:
             exp+=1
-        return s
-    else:
-        s = 0.5
-        if num_ratings>1:
-            s = s+ s/num_ratings
-        return -1 * s
+        s = s+ 1/2**exp
+        exp+=1
+        
+    if positive == False:
+
+        s = -1* s
+    return s
 
 def update_feedback(ratings,res):
 
@@ -440,7 +441,6 @@ def update_feedback(ratings,res):
 
         new_pos_feedback = feedback_formula(len(pos_feedback))
         new_neg_feedback = feedback_formula(len(pos_feedback),positive=False)
-        
         ''' erorrs are caused by the fact that not all users who interacted
         with the resource are in the final list of users
           (users who had at least min_interactions with other resources)'''
