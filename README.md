@@ -41,4 +41,11 @@ If you're feeling brave you can clone this repo locally and follow the steps fro
 
 Otherwise, you can run these Google Colab notebooks (just click the blue links): [content filtering](https://colab.research.google.com/drive/1Y0vRqUAqbu6FSj41O0nf3SeNYkw4lY7o?usp=sharing), [collaborative filtering](https://colab.research.google.com/drive/1dvJ0yhuKA26XCYU9sncrmqCpA-2dagfi?usp=sharing)
 
+# Video Demo for content filtering:
+
+
+https://github.com/Meepo39-1/Anti-Confirmation-Bias-Recommendation-System/assets/39216531/6e10f596-af7e-43d5-99fc-9f0f1d7db5c4
+
+
+
 Disclaimer: Some posts **might** contain offensive content. I apologize if that's the case. r/changemyview reports and deletes offensive posts, but some may have sneaked into the dataset."
